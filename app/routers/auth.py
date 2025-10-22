@@ -3,7 +3,9 @@ from fastapi import FastAPI, Response, status, HTTPException, APIRouter
 from ..databse import  get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+#This is a dependency class to collect the username and password as form data for an OAuth2 password flow.
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm 
+
 
 
 
@@ -14,7 +16,7 @@ router =APIRouter(
 
 router = APIRouter(tags=["Authentication"])
 
-@router.post('/login')
+@router.post('/login', response_model=schemas.Token)      
 def login(user_credentials: OAuth2PasswordRequestForm= Depends(), db: Session = Depends(get_db)):
     #  Find the user by email
     user = db.query(models.User).filter(models.User.email == user_credentials.username).first()
@@ -32,7 +34,10 @@ def login(user_credentials: OAuth2PasswordRequestForm= Depends(), db: Session = 
         )
     
     access_token = oauth2.create_access_token(data={"user_id":user.id})
-    return {"access_token": access_token, "token_type":"bearer"}
+    return {
+        "user_id": user.id,
+        "access_token": access_token, 
+        "token_type":"bearer"}
 
 
     
